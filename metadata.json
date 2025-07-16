@@ -1,0 +1,6 @@
+{
+  "name": "Nexus BI Reporting Tool",
+  "description": "A modern web application for a business intelligence reporting tool. Users can view a dashboard of analytics, manage folders and reports, with features for creating, viewing, and organizing data-driven insights.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}

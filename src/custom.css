@@ -1,0 +1,13 @@
+/* Make react-querybuilder blend with Bootstrap theme */
+.ruleGroup {
+  background-color: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: var(--bs-border-radius);
+  padding: 1rem;
+}
+
+/* Style the connector lines to match the primary theme color */
+.queryBuilder-branches .ruleGroup-body::before, .queryBuilder-branches .ruleGroup-body::after,
+.queryBuilder-branches .rule::before, .queryBuilder-branches .rule::after {
+  border-color: var(--bs-primary);
+}

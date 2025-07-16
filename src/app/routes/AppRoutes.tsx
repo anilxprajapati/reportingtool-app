@@ -1,0 +1,33 @@
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import DashboardPage from '../features/dashboard/DashboardPage';
+import FolderListPage from '../features/folderList/FolderListPage';
+import SchemaExplorerPage from '../features/schemaExplorer/SchemaExplorerPage';
+import ReportBuilderPage from '../features/reportBuilder/ReportBuilderPage';
+import ReportOutputPage from '../features/reportOutput/ReportOutputPage';
+
+interface AppRoutesProps {
+  theme: string;
+}
+
+/**
+ * Defines all the application routes.
+ * It sets up a default route to the dashboard and a catch-all redirect.
+ */
+const AppRoutes: React.FC<AppRoutesProps> = ({ theme }) => {
+  return (
+    <Routes>
+      <Route path="/dashboard" element={<DashboardPage theme={theme} />} />
+      <Route path="/folders" element={<FolderListPage theme={theme} />} />
+      <Route path="/schema-explorer" element={<SchemaExplorerPage theme={theme} />} />
+      <Route path="/report-builder" element={<ReportBuilderPage theme={theme} />} />
+      <Route path="/report-output" element={<ReportOutputPage theme={theme} />} />
+      {/* Default route */}
+      <Route path="/" element={<Navigate to="/dashboard" />} />
+      {/* Redirect any unknown paths to the dashboard */}
+      <Route path="*" element={<Navigate to="/dashboard" />} />
+    </Routes>
+  );
+};
+
+export default AppRoutes;
