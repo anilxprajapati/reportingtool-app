@@ -114,7 +114,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ startTour }) => {
                     connectedTables.add(join.toTableId);
                     newConnectionFound = true;
                 } else if (!fromConnected && toConnected) {
-                    connectedTables.add(join.fromTableId);
+                    connectedTables.add(join.toTableId);
                     newConnectionFound = true;
                 }
             }

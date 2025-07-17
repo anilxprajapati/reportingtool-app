@@ -41,7 +41,7 @@ const ReportTable: React.FC<ReportTableProps> = ({ reports, selectedFolderName, 
       cellRendererParams: {
         reportBuilderDispatch,
         deleteReport,
-        navigate,
+        navigate: navigate,
       },
       filter: false,
       sortable: false,

@@ -3,6 +3,7 @@ import { Container, ToastContainer } from 'react-bootstrap';
 import Joyride, { CallBackProps, STATUS, Step, ACTIONS, EVENTS } from 'react-joyride';
 import Header from './components/Header';
 import AppRoutes from './routes/AppRoutes';
+import Breadcrumbs from './components/Breadcrumbs';
 import { dashboardTourSteps } from './components/AppTour';
 
 /**
@@ -37,23 +38,16 @@ function App() {
   }, [theme, startTour]);
   
   const handleJoyrideCallback = useCallback((data: CallBackProps) => {
-    const { action, index, status, type, lifecycle, size } = data;
+    const { action, index, status, type } = data;
 
-    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
-      // Tour is finished or skipped
+    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       setRunTour(false);
       setStepIndex(0);
-      setSteps([]);
-      // Only mark the global tour as completed if it was the initial dashboard tour
-      if (lifecycle === 'complete' && size === dashboardTourSteps.length) {
-         localStorage.setItem('nexus-tour-completed', 'true');
-      }
-    } else if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type as any)) {
-      // User clicked "Next" or "Back"
+      localStorage.setItem('nexus-tour-completed', 'true');
+    } else if (type === EVENTS.STEP_AFTER) {
       const newIndex = index + (action === ACTIONS.PREV ? -1 : 1);
       setStepIndex(newIndex);
-    } else if (action === ACTIONS.CLOSE) {
-      // User clicked the "x" button or the overlay
+    } else if (action === ACTIONS.CLOSE || status === STATUS.PAUSED) {
       setRunTour(false);
     }
   }, []);
@@ -86,8 +80,11 @@ function App() {
       />
       <Header theme={theme} toggleTheme={toggleTheme} />
       <main className="py-4 flex-grow-1 overflow-auto">
-        <Container fluid className="h-100">
-          <AppRoutes theme={theme} startTour={startTour} />
+        <Container fluid className="h-100 d-flex flex-column">
+          <Breadcrumbs />
+          <div className="flex-grow-1" style={{ minHeight: 0 }}>
+            <AppRoutes theme={theme} startTour={startTour} />
+          </div>
         </Container>
       </main>
       <ToastContainer position="bottom-end" className="p-3" style={{ zIndex: 1056 }} />

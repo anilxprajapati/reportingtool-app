@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Row, Col } from 'react-bootstrap';
+import React from 'react';
+import { Row, Col, Card, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import type { Step } from 'react-joyride';
 import DatabaseSchemaSidebar from './components/DatabaseSchemaSidebar';
@@ -15,17 +15,22 @@ const ReportBuilderPage: React.FC<ReportBuilderPageProps> = ({ theme, startTour 
   const { state } = useReportBuilder();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // If there are no tables selected, the user should start from the beginning.
-    if (state.selectedTables.length === 0) {
-      navigate('/schema-explorer');
-    }
-  }, [state.selectedTables, navigate]);
-
-
   if (state.selectedTables.length === 0) {
-    // Render nothing or a loading spinner while redirecting
-    return null;
+    return (
+        <div className="d-flex flex-column h-100 justify-content-center align-items-center">
+            <Card className="text-center p-4 shadow-sm" style={{ maxWidth: '500px' }}>
+                <Card.Body>
+                    <Card.Title as="h3">No Data Source Selected</Card.Title>
+                    <Card.Text className="text-muted my-3">
+                        To build or edit a report, you must first select a primary table from your data sources.
+                    </Card.Text>
+                    <Button variant="primary" size="lg" onClick={() => navigate('/schema-explorer')}>
+                        Select a Table
+                    </Button>
+                </Card.Body>
+            </Card>
+        </div>
+    );
   }
 
   // The page is structured into a two-column layout.
