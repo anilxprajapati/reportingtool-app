@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Row, Col, Card, Spinner, Alert } from 'react-bootstrap';
+import type { Step } from 'react-joyride';
 import FolderList from './components/FolderList';
 import ReportTable from './components/ReportTable';
 import CreateFolderModal from './components/CreateFolderModal';
@@ -9,13 +10,14 @@ import type { Folder } from '../../../types';
 
 interface FolderListPageProps {
   theme: string;
+  startTour: (steps: Step[], index?: number) => void;
 }
 
 /**
  * Renders the main page for browsing folders and reports.
  * This component orchestrates the folder list, report table, and creation modals.
  */
-const FolderListPage: React.FC<FolderListPageProps> = ({ theme }) => {
+const FolderListPage: React.FC<FolderListPageProps> = ({ theme, startTour }) => {
   const { folders, loading: loadingFolders, addFolder } = useFolders();
   const { reports, loading: loadingReports } = useReportContext();
 
@@ -28,6 +30,7 @@ const FolderListPage: React.FC<FolderListPageProps> = ({ theme }) => {
     addFolder(folderData);
     setAlertInfo({ variant: 'success', message: `Folder "${folderData.name}" created successfully!` });
     setShowCreateFolderModal(false);
+    setTimeout(() => setAlertInfo(null), 4000); // Auto-dismiss alert
   }, [addFolder]);
 
   const filteredReports = useMemo(() => {
@@ -58,7 +61,7 @@ const FolderListPage: React.FC<FolderListPageProps> = ({ theme }) => {
         </Alert>
       )}
       <Row className="h-100">
-        <Col lg={3} md={4} className="d-flex flex-column h-100 pb-3">
+        <Col lg={3} md={4} className="d-flex flex-column h-100 pb-3" id="tour-step-folders">
           <Card className="flex-grow-1 d-flex flex-column">
             <Card.Body className="d-flex flex-column">
               <FolderList
@@ -72,7 +75,7 @@ const FolderListPage: React.FC<FolderListPageProps> = ({ theme }) => {
           </Card>
         </Col>
 
-        <Col lg={9} md={8} className="d-flex flex-column h-100 pb-3">
+        <Col lg={9} md={8} className="d-flex flex-column h-100 pb-3" id="tour-step-reports-table">
            <Card className="flex-grow-1 d-flex flex-column">
             <Card.Body className="d-flex flex-column">
               <ReportTable
@@ -80,6 +83,7 @@ const FolderListPage: React.FC<FolderListPageProps> = ({ theme }) => {
                 selectedFolderName={selectedFolder?.name}
                 onCreateFolder={() => setShowCreateFolderModal(true)}
                 theme={theme}
+                startTour={startTour}
               />
             </Card.Body>
           </Card>

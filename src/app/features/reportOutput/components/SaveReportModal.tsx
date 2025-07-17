@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, Button, Form, Alert } from 'react-bootstrap';
+import { Modal, Button, Form } from 'react-bootstrap';
 import type { Report, Folder } from '../../../../types';
 import StyledSelect from '../../../components/StyledSelect';
 import type { Options } from 'react-select';
@@ -15,48 +15,59 @@ interface SaveReportModalProps {
 }
 
 const SaveReportModal: React.FC<SaveReportModalProps> = ({ show, onHide, onSave, report, folders }) => {
-  const [reportName, setReportName] = useState(report.reportName);
+  const [reportName, setReportName] = useState('');
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [validated, setValidated] = useState(false);
 
   const folderOptions: Options<FolderOption> = useMemo(() => {
-    return folders.flatMap(f => {
-        const parent = { value: f.id, label: f.name };
-        const children = f.children?.map(c => ({ value: c.id, label: `  ${c.name}` })) || [];
-        return [parent, ...children];
-    });
+    const options: FolderOption[] = [];
+    const addFolders = (folderList: Folder[], depth: number) => {
+        for (const f of folderList) {
+            options.push({ value: f.id, label: `${'  '.repeat(depth)}${f.name}` });
+            if (f.children) {
+                addFolders(f.children, depth + 1);
+            }
+        }
+    };
+    addFolders(folders, 0);
+    return options;
   }, [folders]);
   
   useEffect(() => {
     if (show) {
       setReportName(report.reportName);
-      // Find the current folder's ID
-      let folderId: string | undefined;
-      for (const f of folders) {
-        if (f.name === report.folderName) {
-            folderId = f.id;
-            break;
+      
+      let initialFolder: Folder | undefined;
+      const findFolder = (folderList: Folder[]): Folder | undefined => {
+        for (const f of folderList) {
+            if (f.name === report.folderName) return f;
+            if (f.children) {
+                const found = findFolder(f.children);
+                if (found) return found;
+            }
         }
-        const child = f.children?.find(c => c.name === report.folderName);
-        if (child) {
-            folderId = child.id;
-            break;
-        }
-      }
-      setSelectedFolderId(folderId || null);
+        return undefined;
+      };
+
+      initialFolder = findFolder(folders);
+      setSelectedFolderId(initialFolder?.id || null);
+      
       setValidated(false);
     }
   }, [show, report, folders]);
 
   const handleSubmit = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    if (reportName.trim() === '' || !selectedFolderId) {
-      setValidated(true);
-      return;
+    const isFormValid = reportName.trim() !== '' && !!selectedFolderId;
+    setValidated(true);
+    
+    if (isFormValid) {
+      onSave({ reportName, folderId: selectedFolderId! });
     }
-    onSave({ reportName, folderId: selectedFolderId });
   };
   
+  const isSaveDisabled = !reportName.trim() || !selectedFolderId;
+
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
@@ -88,7 +99,7 @@ const SaveReportModal: React.FC<SaveReportModalProps> = ({ show, onHide, onSave,
                 placeholder="Select a folder..."
             />
             {validated && !selectedFolderId && (
-                <div className="text-danger small mt-1">Please select a folder.</div>
+                <div className="text-danger small mt-1 is-invalid">Please select a folder.</div>
             )}
           </Form.Group>
         </Form>
@@ -97,7 +108,11 @@ const SaveReportModal: React.FC<SaveReportModalProps> = ({ show, onHide, onSave,
         <Button variant="secondary" onClick={onHide}>
           Cancel
         </Button>
-        <Button variant="primary" onClick={handleSubmit}>
+        <Button 
+            variant="primary" 
+            onClick={handleSubmit} 
+            disabled={isSaveDisabled}
+        >
           Save
         </Button>
       </Modal.Footer>

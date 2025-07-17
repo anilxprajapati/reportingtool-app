@@ -3,20 +3,19 @@ import { Button } from 'react-bootstrap';
 import { BsPencil, BsTrash, BsPlay } from 'react-icons/bs';
 import { ICellRendererParams } from 'ag-grid-community';
 import type { Report } from '../../../../types';
-import type { NavigateFunction } from 'react-router-dom';
 
-interface ActionCellRendererProps extends ICellRendererParams<Report> {
+type ActionCellRendererProps = ICellRendererParams<Report> & {
   reportBuilderDispatch: React.Dispatch<any>;
   deleteReport: (reportId: string) => void;
-  navigate: NavigateFunction;
-}
+  navigate: (path: string) => void;
+};
 
 /**
  * A custom cell renderer for AG Grid to display action buttons.
  * Receives context functions via `props` from `cellRendererParams`.
  */
 const ActionCellRenderer: React.FC<ActionCellRendererProps> = (props) => {
-  const { reportBuilderDispatch, deleteReport, navigate, data: report } = props;
+  const { data: report, reportBuilderDispatch, deleteReport, navigate } = props;
     
   const handleEdit = () => {
     if (!report) return;
@@ -31,7 +30,7 @@ const ActionCellRenderer: React.FC<ActionCellRendererProps> = (props) => {
         return;
     }
     console.log('Running report:', report);
-    sessionStorage.setItem('nexusReportConfig', JSON.stringify(report.config));
+    localStorage.setItem('nexusReportConfig', JSON.stringify(report.config));
     window.open('/report-output', '_blank');
   };
 

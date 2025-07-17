@@ -1,5 +1,5 @@
 import React from 'react';
-import Select, { Props, StylesConfig } from 'react-select';
+import Select, { GroupBase, Props, StylesConfig, components, OptionProps } from 'react-select';
 
 // This function creates theme-aware styles for react-select using CSS variables
 const getCustomStyles = (): StylesConfig<any, boolean> => ({
@@ -38,6 +38,7 @@ const getCustomStyles = (): StylesConfig<any, boolean> => ({
   }),
   menu: (provided) => ({
     ...provided,
+    minWidth: '250px',
     backgroundColor: 'var(--bs-body-bg)',
     border: `1px solid var(--bs-border-color)`,
     boxShadow: 'var(--bs-box-shadow)',
@@ -55,6 +56,9 @@ const getCustomStyles = (): StylesConfig<any, boolean> => ({
     '&:active': {
       backgroundColor: 'var(--bs-primary-bg-subtle)',
     },
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   }),
   placeholder: (provided) => ({
     ...provided,
@@ -62,21 +66,35 @@ const getCustomStyles = (): StylesConfig<any, boolean> => ({
   }),
 });
 
+// A custom Option component to add a 'title' attribute for tooltips on hover
+const CustomOption = (props: OptionProps<any, boolean>) => {
+  return (
+    <components.Option {...props} innerProps={{...props.innerProps, title: String(props.label)}} />
+  );
+};
+
 /**
  * A styled wrapper for the react-select component that integrates
  * seamlessly with Bootstrap's dark and light themes.
  * It uses a portal to render the menu at the body level, fixing z-index issues.
  */
-const StyledSelect: React.FC<Props> = (props) => {
+const StyledSelect = <
+  Option,
+  IsMulti extends boolean = false,
+  Group extends GroupBase<Option> = GroupBase<Option>
+>(
+  props: Props<Option, IsMulti, Group>
+) => {
   const customStyles = getCustomStyles();
   
   // Only portal the menu if the document object is available (i.e., in the browser)
   const menuPortalTarget = typeof document !== 'undefined' ? document.body : null;
 
   return (
-    <Select
+    <Select<Option, IsMulti, Group>
       styles={customStyles}
       menuPortalTarget={menuPortalTarget}
+      components={{ Option: CustomOption, ...props.components }}
       {...props}
     />
   );

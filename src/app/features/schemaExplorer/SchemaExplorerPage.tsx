@@ -1,18 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import { Row, Col, Spinner, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { BsQuestionCircle } from 'react-icons/bs';
+import type { Step } from 'react-joyride';
 import { useSchemas } from '../../hooks/useSchemas';
 import SchemaList from './components/SchemaList';
 import TablePreview from './components/TablePreview';
 import EmptyPreview from './components/EmptyPreview';
 import type { Table, Schema } from '../../../types';
 import { useReportBuilder } from '../reportBuilder/context/ReportBuilderContext';
+import { schemaExplorerTourSteps } from '../../components/AppTour';
 
 interface SchemaExplorerPageProps {
   theme: string;
+  startTour: (steps: Step[], index?: number) => void;
 }
 
-const SchemaExplorerPage: React.FC<SchemaExplorerPageProps> = ({ theme }) => {
+const SchemaExplorerPage: React.FC<SchemaExplorerPageProps> = ({ theme, startTour }) => {
   const navigate = useNavigate();
   const { schemas, loading } = useSchemas();
   const { state: reportState, dispatch } = useReportBuilder();
@@ -71,18 +75,23 @@ const SchemaExplorerPage: React.FC<SchemaExplorerPageProps> = ({ theme }) => {
 
   return (
     <div className="d-flex flex-column h-100">
-      <header className="mb-4">
-        <h2>{isAddMode ? 'Add More Tables' : 'Add New Primary Table'}</h2>
-        <p className="text-muted">
-          {isAddMode 
-            ? 'Select one or more related tables to add to your report.'
-            : 'You must select one table to be the primary table for your new report.'
-          }
-        </p>
+      <header className="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+          <h2 className="mb-1" id="schema-explorer-header">{isAddMode ? 'Add More Tables' : 'Add New Primary Table'}</h2>
+          <p className="text-muted mb-0">
+            {isAddMode 
+              ? 'Select one or more related tables to add to your report.'
+              : 'You must select one table to be the primary table for your new report.'
+            }
+          </p>
+        </div>
+        <Button variant="outline-info" onClick={() => startTour(schemaExplorerTourSteps)} title="Take a tour of this page">
+            <BsQuestionCircle className="me-2"/> Page Tour
+        </Button>
       </header>
 
       <Row className="flex-grow-1" style={{ minHeight: 0 }}>
-        <Col md={4} className="d-flex flex-column h-100 pb-3">
+        <Col md={4} className="d-flex flex-column h-100 pb-3" id="tour-step-schema-list">
           <SchemaList
             schemas={availableSchemas}
             searchQuery={searchQuery}
@@ -95,7 +104,7 @@ const SchemaExplorerPage: React.FC<SchemaExplorerPageProps> = ({ theme }) => {
           />
         </Col>
 
-        <Col md={8} className="d-flex flex-column h-100 pb-3">
+        <Col md={8} className="d-flex flex-column h-100 pb-3" id="schema-preview-panel">
           {previewTable ? (
             <TablePreview table={previewTable} theme={theme} />
           ) : (
@@ -105,7 +114,7 @@ const SchemaExplorerPage: React.FC<SchemaExplorerPageProps> = ({ theme }) => {
       </Row>
 
       <footer className="py-3 mt-auto border-top" style={{ background: 'var(--bs-body-bg)' }}>
-        <div className="d-flex justify-content-end">
+        <div className="d-flex justify-content-end" id="schema-explorer-footer">
           <Button variant="secondary" className="me-2" onClick={() => navigate(isAddMode ? '/report-builder' : '/folders')}>
             {isAddMode ? 'Back to Builder' : 'Cancel'}
           </Button>
@@ -114,7 +123,7 @@ const SchemaExplorerPage: React.FC<SchemaExplorerPageProps> = ({ theme }) => {
                 Add Selected Tables
              </Button>
           ) : (
-             <Button variant="primary" disabled={!singleSelectedTable} onClick={handleSetPrimaryTable}>
+             <Button variant="primary" disabled={!singleSelectedTable} onClick={handleSetPrimaryTable} id="tour-step-add-table">
                 Add Primary Table
              </Button>
           )}

@@ -1,0 +1,44 @@
+/* Make react-querybuilder blend with Bootstrap theme */
+.ruleGroup {
+  background-color: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: var(--bs-border-radius);
+  padding: 1rem;
+}
+
+/* Style the connector lines to match the primary theme color */
+.queryBuilder-branches .ruleGroup-body::before, .queryBuilder-branches .ruleGroup-body::after,
+.queryBuilder-branches .rule::before, .queryBuilder-branches .rule::after {
+  border-color: var(--bs-primary);
+}
+
+/* Highlight invalid rules with a red border and background to draw attention to validation errors. */
+.rule.is-invalid {
+  border: 1px solid var(--bs-danger) !important;
+  border-radius: var(--bs-border-radius);
+  padding: 0.5rem;
+  background-color: var(--bs-danger-bg-subtle);
+}
+
+/* React Joyride Theming */
+:root {
+  --joyride-arrow-color: var(--bs-body-bg);
+  --joyride-background-color: var(--bs-body-bg);
+  --joyride-beacon-inner-color: var(--bs-primary);
+  --joyride-beacon-outer-color: var(--bs-primary-bg-subtle);
+  --joyride-text-color: var(--bs-body-color);
+  --joyride-primary-color: var(--bs-primary);
+  --joyride-overlay-color: rgba(var(--bs-dark-rgb), 0.5);
+}
+
+div[id^='react-joyride-step-'] > div {
+  border-radius: var(--bs-border-radius-lg);
+  box-shadow: var(--bs-box-shadow-lg);
+}
+
+div[id^='react-joyride-step-'] button {
+  border-radius: var(--bs-border-radius);
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  transition: all 0.2s ease-in-out;
+}

@@ -86,6 +86,24 @@ const MOCK_SCHEMA_DATA: Schema[] = [
   }
 ];
 
+/*
+// --- Example of a real API call ---
+async function fetchSchemasFromApi(): Promise<Schema[]> {
+  try {
+    // Replace with your actual API endpoint
+    const response = await fetch('/api/v1/schemas');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.schemas; // Assuming the API returns { schemas: [...] }
+  } catch (error) {
+    console.error("Could not fetch schemas:", error);
+    // Return mock data as a fallback
+    return MOCK_SCHEMA_DATA;
+  }
+}
+*/
 
 /**
  * Custom hook to manage schema data.
@@ -96,7 +114,13 @@ export const useSchemas = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate network delay for fetching initial data
+    // To use a real API, uncomment the following line and comment out the timeout:
+    // fetchSchemasFromApi().then(data => {
+    //   setSchemas(data);
+    //   setLoading(false);
+    // });
+
+    // Simulate network delay for fetching initial data with mock data
     const timer = setTimeout(() => {
       setSchemas(MOCK_SCHEMA_DATA);
       setLoading(false);

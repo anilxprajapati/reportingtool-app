@@ -8,20 +8,15 @@ import {
 } from 'react-querybuilder';
 import { Button, Form } from 'react-bootstrap';
 import {
-  BsPlus,
-  BsTrash,
-  BsCopy,
-  BsLockFill,
-  BsUnlockFill,
   BsGripVertical,
 } from 'react-icons/bs';
 import StyledSelect from '../../../../components/StyledSelect';
 
 type SelectorType = 'combinator' | 'field' | 'operator';
 
-interface BootstrapStyledSelectorProps extends ValueSelectorProps {
+type BootstrapStyledSelectorProps = ValueSelectorProps & {
     type: SelectorType;
-}
+};
 
 export const BootstrapStyledSelector: React.FC<BootstrapStyledSelectorProps> = ({
   className,
@@ -40,13 +35,16 @@ export const BootstrapStyledSelector: React.FC<BootstrapStyledSelectorProps> = (
         field: 'Select field...',
         operator: 'Select operator...'
     };
+    
+    // Remove 'form-select' to prevent double arrow background image with react-select
+    const newClassName = className ? className.replace('form-select', '') : '';
 
     return (
-        <div className={className} style={{minWidth: '150px'}}>
+        <div className={newClassName} style={{minWidth: '250px'}}>
             <StyledSelect
                 value={selectOptions.find(o => o.value === value)}
                 options={selectOptions}
-                onChange={(v) => handleOnChange(v?.value ?? '')}
+                onChange={(v: any) => handleOnChange(v?.value ?? '')}
                 placeholder={placeholderMap[type]}
             />
         </div>
@@ -54,43 +52,25 @@ export const BootstrapStyledSelector: React.FC<BootstrapStyledSelectorProps> = (
 };
 
 
-export const BootstrapActionElement: React.FC<ActionProps & { type: 'addRule' | 'addGroup' | 'removeRule' | 'removeGroup' | 'cloneRule' | 'cloneGroup' | 'lock' }> = ({
+export const BootstrapActionElement: React.FC<ActionProps & { icon: React.ReactNode; variant?: 'primary' | 'secondary' | 'danger' }> = ({
   className,
   handleOnClick,
   label,
   title,
   disabled,
-  type,
+  icon,
+  variant = 'primary'
 }) => {
-  const iconMap = {
-    addRule: <BsPlus />,
-    addGroup: <BsPlus />,
-    removeRule: <BsTrash />,
-    removeGroup: <BsTrash />,
-    cloneRule: <BsCopy />,
-    cloneGroup: <BsCopy />,
-    lock: typeof label === 'string' && label.includes('Unlock') ? <BsUnlockFill/> : <BsLockFill />,
-  };
-  const variantMap = {
-    addRule: 'primary',
-    addGroup: 'secondary',
-    removeRule: 'danger',
-    removeGroup: 'danger',
-    cloneRule: 'secondary',
-    cloneGroup: 'secondary',
-    lock: 'secondary',
-  };
-  const isRemove = type.includes('remove');
-  
   return (
     <Button
-      variant={isRemove ? 'danger' : 'primary'}
+      variant={variant}
       size="sm"
       className={className}
       title={title}
       onClick={e => handleOnClick(e)}
       disabled={disabled}>
-      {iconMap[type]} <span className="ms-1">{type === 'addGroup' ? 'Group' : 'Rule'}</span>
+      {icon}
+      {label && <span className="ms-1">{label}</span>}
     </Button>
   );
 };

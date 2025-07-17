@@ -135,7 +135,11 @@ const HavingItem: React.FC<{ filter: Filter }> = ({ filter }) => {
     );
 };
 
-const GroupingTab: React.FC = () => {
+interface GroupingTabProps {
+    setActiveTab: (tab: string) => void;
+}
+
+const GroupingTab: React.FC<GroupingTabProps> = ({ setActiveTab }) => {
     const { state, dispatch } = useReportBuilder();
     const currentStep = state.steps[state.currentStepIndex];
     const hasAggregations = currentStep.aggregations.length > 0;
@@ -143,7 +147,6 @@ const GroupingTab: React.FC = () => {
     const handleAddGrouping = () => dispatch({ type: 'ADD_GROUPING' });
     const handleAddHaving = () => dispatch({ type: 'ADD_HAVING' });
     
-
     return (
         <div>
             <p className="text-muted small mb-3">Group rows that have the same values into summary rows. This is typically used with aggregation functions.</p>
@@ -171,14 +174,21 @@ const GroupingTab: React.FC = () => {
              <p className="text-muted small mb-3">
                 Filter groups after aggregations have been applied. This corresponds to the <code>HAVING</code> clause in SQL.
             </p>
-            <Card>
-                <Card.Body>
-                    {!hasAggregations ? (
-                        <Alert variant="warning" className="mb-0">
-                            <BsExclamationTriangle className="me-2"/>
-                            The "Having" clause requires at least one aggregation to be defined in the 'Aggregations' tab.
-                        </Alert>
-                    ) : (
+            {!hasAggregations ? (
+                <Alert variant="warning">
+                    <Alert.Heading as="h6"><BsExclamationTriangle className="me-2"/>Action Required</Alert.Heading>
+                    <p className="mb-2">
+                        The "Having" clause requires at least one aggregation to be defined.
+                    </p>
+                    <div className="d-flex justify-content-end">
+                        <Button variant="outline-secondary" size="sm" onClick={() => setActiveTab('aggregations')}>
+                            Go to Aggregations
+                        </Button>
+                    </div>
+                </Alert>
+            ) : (
+                <Card>
+                    <Card.Body>
                         <Stack gap={3}>
                             {currentStep.having.map(h => (
                                 <HavingItem key={h.id} filter={h} />
@@ -194,9 +204,9 @@ const GroupingTab: React.FC = () => {
                                 </Button>
                             </div>
                         </Stack>
-                    )}
-                </Card.Body>
-            </Card>
+                    </Card.Body>
+                </Card>
+            )}
         </div>
     );
 };

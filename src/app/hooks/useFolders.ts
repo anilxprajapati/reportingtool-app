@@ -43,19 +43,38 @@ const MOCK_FOLDERS_DATA: Folder[] = [
   { id: '9', name: 'IT Support Tickets', isPrivate: true },
 ];
 
+/*
+// --- Example of a real API call ---
+async function fetchFoldersFromApi(): Promise<Folder[]> {
+  try {
+    const response = await fetch('/api/v1/folders');
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+    return data.folders; // Assuming the API returns { folders: [...] }
+  } catch (error) {
+    console.error("Could not fetch folders:", error);
+    return MOCK_FOLDERS_DATA; // Fallback
+  }
+}
+
+async function createFolderInApi(folderData: { name: string; isPrivate: boolean; parentId: string | null }): Promise<Folder> {
+    const response = await fetch('/api/v1/folders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(folderData),
+    });
+    if (!response.ok) throw new Error('Failed to create folder');
+    return await response.json();
+}
+*/
+
 const addFolderRecursively = (nodes: Folder[], parentId: string, newFolder: Folder): Folder[] => {
   return nodes.map(node => {
     if (node.id === parentId) {
-      return {
-        ...node,
-        children: [...(node.children || []), newFolder],
-      };
+      return { ...node, children: [...(node.children || []), newFolder] };
     }
     if (node.children) {
-      return {
-        ...node,
-        children: addFolderRecursively(node.children, parentId, newFolder),
-      };
+      return { ...node, children: addFolderRecursively(node.children, parentId, newFolder) };
     }
     return node;
   });
@@ -70,23 +89,30 @@ export const useFolders = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate network delay for fetching initial data
+    // To use API: fetchFoldersFromApi().then(data => { setFolders(data); setLoading(false); });
     const timer = setTimeout(() => {
       setFolders(MOCK_FOLDERS_DATA);
       setLoading(false);
     }, 300);
-
     return () => clearTimeout(timer);
   }, []);
 
-  const addFolder = useCallback((folderData: { name: string; isPrivate: boolean; parentId: string | null }) => {
+  const addFolder = useCallback(async (folderData: { name: string; isPrivate: boolean; parentId: string | null }) => {
+    /*
+    // --- To use a real API ---
+    try {
+        const newFolder = await createFolderInApi(folderData);
+        if (newFolder.parentId) {
+             setFolders(prevFolders => addFolderRecursively(prevFolders, newFolder.parentId, newFolder));
+        } else {
+             setFolders(prev => [newFolder, ...prev]);
+        }
+    } catch (error) { console.error("Failed to save folder:", error); }
+    */
+    
+    // --- Mock implementation ---
     const { name, isPrivate, parentId } = folderData;
-    const newFolder: Folder = {
-      id: `folder-${Date.now()}`,
-      name,
-      isPrivate,
-      children: [],
-    };
+    const newFolder: Folder = { id: `folder-${Date.now()}`, name, isPrivate, children: [] };
 
     if (parentId) {
       setFolders(prevFolders => addFolderRecursively(prevFolders, parentId, newFolder));

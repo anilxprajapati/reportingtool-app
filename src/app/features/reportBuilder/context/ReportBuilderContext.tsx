@@ -28,21 +28,26 @@ const createNewStep = (name: string): QueryStep => ({
     distinct: false,
 });
 
-// A recursive function to remove rules associated with a set of column IDs
-const cleanQuery = (group: RuleGroupType, validFieldIDs: Set<string>): RuleGroupType => {
+// A recursive function to remove filter rules associated with a table
+const cleanQueryByTable = (group: RuleGroupType, tableIdToRemove: string): RuleGroupType => {
   const rules = group.rules
     .map(rule => {
       if ('rules' in rule) {
-        const cleanedGroup = cleanQuery(rule, validFieldIDs);
+        const cleanedGroup = cleanQueryByTable(rule, tableIdToRemove);
         // Don't keep empty groups
         return cleanedGroup.rules.length > 0 ? cleanedGroup : null;
       }
-      return validFieldIDs.has(rule.field) ? rule : null;
+      // field is 'table.id::column.name'
+      if (typeof rule.field === 'string' && rule.field.startsWith(`${tableIdToRemove}::`)) {
+          return null;
+      }
+      return rule;
     })
     .filter((r): r is RuleGroupType | RuleType => r !== null);
 
   return { ...group, rules };
 };
+
 
 // --- State and Actions ---
 
@@ -135,12 +140,11 @@ const reportBuilderReducer = (state: ReportBuilderState, action: Action): Report
 
         const newSteps = state.steps.map(step => {
             const newSelectedColumns = step.selectedColumns.filter(c => c.tableId !== tableIdToRemove);
-            const validColumnIds = new Set(newSelectedColumns.map(c => c.id));
             const removedColumnIds = new Set(step.selectedColumns.filter(c => c.tableId === tableIdToRemove).map(c => c.id));
 
             const newJoins = step.joins.filter(j => j.fromTableId !== tableIdToRemove && j.toTableId !== tableIdToRemove);
             const newAggregations = step.aggregations.filter(a => !removedColumnIds.has(a.columnId));
-            const newFiltersQuery = cleanQuery(step.filtersQuery, validColumnIds);
+            const newFiltersQuery = cleanQueryByTable(step.filtersQuery, tableIdToRemove);
             const newGroupings = step.groupings.filter(g => !removedColumnIds.has(g.columnId));
             const newSorts = step.sorts.filter(s => !removedColumnIds.has(s.columnId));
             // Also clean having clauses that might reference the removed columns
@@ -347,7 +351,7 @@ const ReportBuilderContext = createContext<{
   dispatch: React.Dispatch<Action>;
 } | undefined>(undefined);
 
-export const ReportBuilderProvider = ({ children }: { children: ReactNode }) => {
+export const ReportBuilderProvider = ({ children }: { children?: ReactNode }) => {
   const [state, dispatch] = useReducer(reportBuilderReducer, initialState);
   return <ReportBuilderContext.Provider value={{ state, dispatch }}>{children}</ReportBuilderContext.Provider>;
 };

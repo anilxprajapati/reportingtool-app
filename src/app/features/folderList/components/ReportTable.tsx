@@ -1,25 +1,28 @@
 import React from 'react';
 import { Button, ButtonGroup, Badge } from 'react-bootstrap';
-import { BsPlus, BsFolderPlus } from 'react-icons/bs';
+import { BsPlus, BsFolderPlus, BsQuestionCircle } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef } from 'ag-grid-community';
+import type { Step } from 'react-joyride';
 import type { Report } from '../../../../types';
 import ActionCellRenderer from './ActionCellRenderer';
 import { useReportBuilder } from '../../reportBuilder/context/ReportBuilderContext';
 import { useReportContext } from '../../../context/ReportContext';
+import { foldersTourSteps } from '../../../components/AppTour';
 
 interface ReportTableProps {
   reports: Report[];
   selectedFolderName?: string;
   onCreateFolder: () => void;
   theme: string;
+  startTour: (steps: Step[], index?: number) => void;
 }
 
 /**
  * Displays reports in an AG Grid data table with themes, pagination, and actions.
  */
-const ReportTable: React.FC<ReportTableProps> = ({ reports, selectedFolderName, onCreateFolder, theme }) => {
+const ReportTable: React.FC<ReportTableProps> = ({ reports, selectedFolderName, onCreateFolder, theme, startTour }) => {
   const navigate = useNavigate();
   const { dispatch: reportBuilderDispatch } = useReportBuilder();
   const { deleteReport } = useReportContext();
@@ -68,11 +71,14 @@ const ReportTable: React.FC<ReportTableProps> = ({ reports, selectedFolderName, 
           {title} <Badge pill bg="primary">{reports.length}</Badge>
         </h5>
         <ButtonGroup>
-          <Button variant="primary" className="me-2" onClick={handleCreateReport}>
+          <Button id="tour-step-create-report" variant="primary" className="me-2" onClick={handleCreateReport}>
             <BsPlus className="me-1" size={20} /> Create Report
           </Button>
-          <Button variant="outline-secondary" onClick={onCreateFolder}>
+          <Button id="create-folder-button" variant="outline-secondary" onClick={onCreateFolder} className="me-2">
             <BsFolderPlus className="me-1" /> Create Folder
+          </Button>
+          <Button variant="outline-info" onClick={() => startTour(foldersTourSteps)} title="Take a tour of this page">
+            <BsQuestionCircle className="me-1" /> Page Tour
           </Button>
         </ButtonGroup>
       </div>

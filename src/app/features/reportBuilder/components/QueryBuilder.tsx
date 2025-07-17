@@ -3,10 +3,11 @@ import { Card, Tabs, Tab, Button, ButtonGroup, Stack, Form, Alert, Toast, ToastC
 import { 
     BsLayers, BsPlus, BsChevronLeft, BsArrowRepeat, BsPlayFill,
     BsLayoutTextWindowReverse, BsFunnel, BsFilter, BsLink45Deg,
-    BsCollection, BsSortAlphaDown, BsBoxArrowUpRight, BsSave
+    BsCollection, BsSortAlphaDown, BsBoxArrowUpRight, BsSave, BsQuestionCircle
 } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import type { RuleGroupType } from 'react-querybuilder';
+import type { Step } from 'react-joyride';
 
 import { useReportBuilder } from '../context/ReportBuilderContext';
 import { useReportContext } from '../../../context/ReportContext';
@@ -18,6 +19,7 @@ import GroupingTab from './queryBuilder/GroupingTab';
 import SortTab from './queryBuilder/SortTab';
 import OutputTab from './queryBuilder/OutputTab';
 import type { Report } from '../../../../types';
+import { reportBuilderTourSteps } from '../../../components/AppTour';
 
 const countRules = (group: RuleGroupType): number => {
     if (!group || !group.rules) return 0;
@@ -45,8 +47,11 @@ const hasEmptyFilterValue = (group: RuleGroupType): boolean => {
     });
 };
 
+interface QueryBuilderProps {
+  startTour: (steps: Step[], index?: number) => void;
+}
 
-const QueryBuilder: React.FC = () => {
+const QueryBuilder: React.FC<QueryBuilderProps> = ({ startTour }) => {
   const { state, dispatch } = useReportBuilder();
   const { getReportById, addReport, updateReport } = useReportContext();
   const navigate = useNavigate();
@@ -152,7 +157,7 @@ const QueryBuilder: React.FC = () => {
         console.log('--- REPORT CONFIGURATION ---');
         console.log(JSON.stringify(state, null, 2));
         console.log('--- END REPORT CONFIGURATION ---');
-        sessionStorage.setItem('nexusReportConfig', JSON.stringify(state));
+        localStorage.setItem('nexusReportConfig', JSON.stringify(state));
         window.open('/report-output', '_blank');
     }
   };
@@ -166,7 +171,7 @@ const QueryBuilder: React.FC = () => {
     <>
     <Card className="h-100 d-flex flex-column">
       <Card.Header className="p-2 border-bottom-0">
-        <div className="d-flex justify-content-between align-items-center">
+        <div className="d-flex justify-content-between align-items-center" id="report-builder-header">
            <Stack direction="horizontal" gap={2} className="flex-grow-1 me-3 align-items-center">
             <Button variant="link" onClick={() => navigate(-1)} className="text-muted p-0 text-decoration-none">
                 <BsChevronLeft size={24}/>
@@ -180,13 +185,16 @@ const QueryBuilder: React.FC = () => {
             />
           </Stack>
           <div>
+            <Button variant="outline-info" size="sm" onClick={() => startTour(reportBuilderTourSteps)} className="me-3" title="Take a tour of the report builder">
+                <BsQuestionCircle className="me-1" /> Page Tour
+            </Button>
             <Button variant="light" size="sm" onClick={handleReset} className="me-2">
                 <BsArrowRepeat className="me-1" /> Reset All
             </Button>
             <Button variant="outline-primary" size="sm" onClick={() => validateAndSave(false)} className="me-2">
                 <BsSave className="me-1" /> Save
             </Button>
-            <Button variant="primary" size="sm" onClick={() => validateAndSave(true)}>
+            <Button variant="primary" size="sm" onClick={() => validateAndSave(true)} id="tour-step-run-report">
                 <BsPlayFill className="me-1" /> Save & Run Report
             </Button>
           </div>
@@ -201,7 +209,7 @@ const QueryBuilder: React.FC = () => {
           </Alert>
         )}
 
-        <Stack direction="horizontal" gap={2} className="align-items-center mb-3">
+        <Stack direction="horizontal" gap={2} className="align-items-center mb-3" id="query-steps-panel">
             <BsLayers className="me-1" />
             <div className="fw-bold">Query Steps:</div>
             <ButtonGroup size="sm">
@@ -239,12 +247,12 @@ const QueryBuilder: React.FC = () => {
                     <Tab eventKey="sort" title={<><BsSortAlphaDown className="me-2"/>Sort (Global)</>} />
                     <Tab eventKey="output" title={<><BsBoxArrowUpRight className="me-2"/>Output (Global)</>} />
                 </Tabs>
-                <div className="flex-grow-1 p-3 border-top" style={{ overflowY: 'auto' }}>
+                <div className="flex-grow-1 p-3 border-top" style={{ overflowY: 'auto' }} id="query-tab-content">
                     {activeTab === 'fields' && <FieldsTab validationFocus={validationFocus} />}
                     {activeTab === 'aggregations' && <AggregationsTab />}
                     {activeTab === 'filters' && <FiltersTab />}
                     {activeTab === 'joins' && <JoinsTab validationFocus={validationFocus} />}
-                    {activeTab === 'grouping' && <GroupingTab />}
+                    {activeTab === 'grouping' && <GroupingTab setActiveTab={setActiveTab} />}
                     {activeTab === 'sort' && <SortTab />}
                     {activeTab === 'output' && <OutputTab />}
                 </div>
@@ -253,11 +261,11 @@ const QueryBuilder: React.FC = () => {
       </Card.Body>
     </Card>
     <ToastContainer position="bottom-end" className="p-3" style={{ zIndex: 1056 }}>
-        <Toast onClose={() => setShowSaveToast(false)} show={showSaveToast} delay={3000} autohide>
-          <Toast.Header>
-            <strong className="me-auto">Success</strong>
+        <Toast onClose={() => setShowSaveToast(false)} show={showSaveToast} delay={3000} autohide bg="success">
+          <Toast.Header closeButton={false}>
+            <strong className="me-auto text-white">Success</strong>
           </Toast.Header>
-          <Toast.Body>Report saved successfully!</Toast.Body>
+          <Toast.Body className="text-white">Report saved successfully!</Toast.Body>
         </Toast>
       </ToastContainer>
     </>

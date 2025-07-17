@@ -100,6 +100,7 @@ const FolderList: React.FC<FolderListProps> = ({
       <div style={{ flex: 1, overflowY: 'auto' }}>
         <ListGroup variant="flush">
            <ListGroup.Item
+              id="all-reports-filter"
               action
               active={selectedFolder === null}
               onClick={() => onSelectFolder(null)}
