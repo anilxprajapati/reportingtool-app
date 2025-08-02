@@ -5,6 +5,7 @@ import Header from './components/Header';
 import AppRoutes from './routes/AppRoutes';
 import Breadcrumbs from './components/Breadcrumbs';
 import { dashboardTourSteps } from './components/AppTour';
+import GlobalStyles from './components/GlobalStyles';
 
 /**
  * The root component of the application.
@@ -37,7 +38,7 @@ function App() {
     }
   }, [theme, startTour]);
   
-  const handleJoyrideCallback = useCallback((data: CallBackProps) => {
+  const handleJoyrideCallback = (data: CallBackProps) => {
     const { action, index, status, type } = data;
 
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
@@ -50,7 +51,7 @@ function App() {
     } else if (action === ACTIONS.CLOSE || status === STATUS.PAUSED) {
       setRunTour(false);
     }
-  }, []);
+  };
 
   const toggleTheme = () => {
     setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
@@ -58,6 +59,7 @@ function App() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <GlobalStyles />
       <Joyride
         callback={handleJoyrideCallback}
         continuous

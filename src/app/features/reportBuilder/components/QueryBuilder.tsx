@@ -1,9 +1,12 @@
+
+
 import React, { useState, ChangeEvent } from 'react';
-import { Card, Tabs, Tab, Button, ButtonGroup, Stack, Form, Alert, Toast, ToastContainer } from 'react-bootstrap';
+import { Card, Tabs, Tab, Button, ButtonGroup, Stack, Form, Alert, Toast, ToastContainer, InputGroup } from 'react-bootstrap';
 import { 
     BsLayers, BsPlus, BsChevronLeft, BsArrowRepeat, BsPlayFill,
     BsLayoutTextWindowReverse, BsFunnel, BsFilter, BsLink45Deg,
-    BsCollection, BsSortAlphaDown, BsBoxArrowUpRight, BsSave, BsQuestionCircle
+    BsCollection, BsSortAlphaDown, BsBoxArrowUpRight, BsSave, BsQuestionCircle,
+    BsX
 } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import type { RuleGroupType } from 'react-querybuilder';
@@ -20,6 +23,7 @@ import SortTab from './queryBuilder/SortTab';
 import OutputTab from './queryBuilder/OutputTab';
 import type { Report } from '../../../../types';
 import { reportBuilderTourSteps } from '../../../components/AppTour';
+import { queryValidator } from '../utils/queryBuilderUtils';
 
 const countRules = (group: RuleGroupType): number => {
     if (!group || !group.rules) return 0;
@@ -29,22 +33,6 @@ const countRules = (group: RuleGroupType): number => {
       }
       return acc + 1;
     }, 0);
-};
-
-const hasEmptyFilterValue = (group: RuleGroupType): boolean => {
-    return group.rules.some(rule => {
-        if ('rules' in rule) {
-            return hasEmptyFilterValue(rule);
-        }
-        // Rules with operators like 'isNull' or 'notNull' don't have a value input.
-        if (rule.operator === 'isNull' || rule.operator === 'notNull') {
-            return false;
-        }
-        const { value } = rule;
-        // A value is considered empty if it's an empty string, null, or undefined.
-        // We explicitly allow boolean `false` and number `0`.
-        return value === '' || value === null || typeof value === 'undefined';
-    });
 };
 
 interface QueryBuilderProps {
@@ -72,6 +60,11 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ startTour }) => {
 
   const handleAddStep = () => dispatch({ type: 'ADD_STEP' });
   const handleSwitchStep = (index: number) => dispatch({ type: 'SWITCH_STEP', payload: index });
+  const handleDeleteStep = (index: number) => {
+    if (window.confirm(`Are you sure you want to delete step "${state.steps[index].name}"?`)) {
+      dispatch({ type: 'DELETE_STEP', payload: index });
+    }
+  };
   
   const validateAndSave = (runAfterSave: boolean) => {
     setValidationError(null);
@@ -84,8 +77,8 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ startTour }) => {
       return;
     }
 
-    if (countRules(currentStep.filtersQuery) > 0 && hasEmptyFilterValue(currentStep.filtersQuery)) {
-        setValidationError("One or more filters has an empty value. Please provide a value for all filters or remove them.");
+    if (Object.keys(queryValidator(currentStep.filtersQuery)).length > 0) {
+        setValidationError("One or more filters has an invalid or empty value. Please provide a value for all filters or remove them.");
         setActiveTab('filters');
         return;
     }
@@ -158,7 +151,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ startTour }) => {
         console.log(JSON.stringify(state, null, 2));
         console.log('--- END REPORT CONFIGURATION ---');
         localStorage.setItem('nexusReportConfig', JSON.stringify(state));
-        window.open('/report-output', '_blank');
+        window.open('#/report-output', '_blank');
     }
   };
   
@@ -171,7 +164,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ startTour }) => {
     <>
     <Card className="h-100 d-flex flex-column">
       <Card.Header className="p-2 border-bottom-0">
-        <div className="d-flex justify-content-between align-items-center" id="report-builder-header">
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2" id="report-builder-header">
            <Stack direction="horizontal" gap={2} className="flex-grow-1 me-3 align-items-center">
             <Button variant="link" onClick={() => navigate(-1)} className="text-muted p-0 text-decoration-none">
                 <BsChevronLeft size={24}/>
@@ -218,8 +211,20 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ startTour }) => {
                         key={step.id}
                         variant={state.currentStepIndex === index ? 'primary' : 'outline-primary'}
                         onClick={() => handleSwitchStep(index)}
+                        title={step.name}
                     >
                         {step.name}
+                        {state.steps.length > 1 && (
+                            <BsX
+                                className="ms-2"
+                                style={{ verticalAlign: 'middle', marginBottom: '2px', cursor: 'pointer' }}
+                                size={22}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteStep(index);
+                                }}
+                            />
+                        )}
                     </Button>
                 ))}
             </ButtonGroup>
@@ -230,7 +235,19 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ startTour }) => {
 
         <Card className="flex-grow-1 d-flex flex-column" style={{minHeight: 0}}>
             <Card.Header className="p-3">
-                <h6 className="mb-0">{`Step: ${currentStep.name} - Configuration`}</h6>
+                <Stack direction="horizontal" gap={3}>
+                    <h6 className="mb-0 me-auto">{`Step Configuration`}</h6>
+                    <Form.Label htmlFor="step-name-input" className="col-form-label col-form-label-sm fw-normal">Name:</Form.Label>
+                    <Form.Control 
+                        id="step-name-input"
+                        type="text"
+                        size="sm"
+                        style={{width: '250px'}}
+                        value={currentStep.name}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => dispatch({ type: 'UPDATE_STEP_NAME', payload: e.target.value })}
+                        aria-label="Step Name"
+                    />
+                </Stack>
             </Card.Header>
             <Card.Body className="p-0 d-flex flex-column">
                 <Tabs

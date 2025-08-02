@@ -24,10 +24,12 @@ const AppRoutes: React.FC<AppRoutesProps> = ({ theme, startTour }) => {
       <Route path="/schema-explorer" element={<SchemaExplorerPage theme={theme} startTour={startTour} />} />
       <Route path="/report-builder" element={<ReportBuilderPage theme={theme} startTour={startTour} />} />
       <Route path="/report-output" element={<ReportOutputPage theme={theme} startTour={startTour} />} />
+      
       {/* Default route */}
-      <Route path="/" element={<Navigate to="/dashboard" />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      
       {/* Redirect any unknown paths to the dashboard */}
-      <Route path="*" element={<Navigate to="/dashboard" />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 };

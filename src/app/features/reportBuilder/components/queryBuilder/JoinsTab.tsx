@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Stack, Alert } from 'react-bootstrap';
-import { BsPlus, BsExclamationTriangle } from 'react-icons/bs';
+import { BsPlus, BsExclamationTriangle, BsArrowCounterclockwise } from 'react-icons/bs';
 import { useReportBuilder } from '../../context/ReportBuilderContext';
 import JoinSegment from './JoinSegment';
 
@@ -22,6 +22,12 @@ const JoinsTab: React.FC<JoinsTabProps> = ({ validationFocus }) => {
         setShowIncompleteJoinAlert(false);
         dispatch({ type: 'ADD_JOIN' });
     };
+
+    const handleReset = () => {
+        if (window.confirm('Are you sure you want to remove all join segments?')) {
+            dispatch({ type: 'RESET_JOINS' });
+        }
+    };
     
     if (state.selectedTables.length < 2) {
         return (
@@ -37,7 +43,14 @@ const JoinsTab: React.FC<JoinsTabProps> = ({ validationFocus }) => {
 
     return (
         <div>
-            <p className="text-muted small mb-3">Define how tables are connected. The first join must originate from the primary table.</p>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <p className="text-muted small mb-0">Define how tables are connected. The first join must originate from the primary table.</p>
+                {currentStep.joins.length > 0 && (
+                    <Button variant="outline-danger" size="sm" onClick={handleReset} title="Remove all joins">
+                        <BsArrowCounterclockwise className="me-1"/> Reset Joins
+                    </Button>
+                )}
+            </div>
             
             <Stack gap={3}>
                 {currentStep.joins.map((join, index) => (

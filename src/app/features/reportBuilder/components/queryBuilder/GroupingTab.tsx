@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Button, Stack, Card, Row, Col, Form, Alert } from 'react-bootstrap';
-import { BsPlus, BsTrash, BsExclamationTriangle } from 'react-icons/bs';
+import { BsPlus, BsTrash, BsExclamationTriangle, BsArrowCounterclockwise } from 'react-icons/bs';
 import { useReportBuilder } from '../../context/ReportBuilderContext';
 import type { Grouping, Filter, FilterOperator } from '../../../../types';
 import StyledSelect from '../../../../components/StyledSelect';
@@ -146,12 +146,30 @@ const GroupingTab: React.FC<GroupingTabProps> = ({ setActiveTab }) => {
 
     const handleAddGrouping = () => dispatch({ type: 'ADD_GROUPING' });
     const handleAddHaving = () => dispatch({ type: 'ADD_HAVING' });
+
+    const handleResetGrouping = () => {
+        if (window.confirm('Are you sure you want to remove all Group By items?')) {
+            dispatch({ type: 'RESET_GROUPING' });
+        }
+    };
+    const handleResetHaving = () => {
+        if (window.confirm('Are you sure you want to remove all Having conditions?')) {
+            dispatch({ type: 'RESET_HAVING' });
+        }
+    };
     
     return (
         <div>
             <p className="text-muted small mb-3">Group rows that have the same values into summary rows. This is typically used with aggregation functions.</p>
             
-            <h5>Group By</h5>
+            <div className="d-flex justify-content-between align-items-center mb-1">
+                <h5>Group By</h5>
+                {currentStep.groupings.length > 0 && (
+                     <Button variant="outline-danger" size="sm" onClick={handleResetGrouping} title="Remove all groupings">
+                        <BsArrowCounterclockwise className="me-1"/> Reset Grouping
+                    </Button>
+                )}
+            </div>
             <Stack gap={3} className="mb-4">
                 {currentStep.groupings.map(g => (
                     <GroupingItem key={g.id} grouping={g} />
@@ -170,8 +188,15 @@ const GroupingTab: React.FC<GroupingTabProps> = ({ setActiveTab }) => {
 
             <hr/>
 
-            <h5 className="mt-4">Having</h5>
-             <p className="text-muted small mb-3">
+            <div className="d-flex justify-content-between align-items-center mt-4">
+                 <h5 className="mb-0">Having</h5>
+                 {currentStep.having.length > 0 && (
+                     <Button variant="outline-danger" size="sm" onClick={handleResetHaving} title="Remove all Having conditions">
+                        <BsArrowCounterclockwise className="me-1"/> Reset Having
+                    </Button>
+                )}
+            </div>
+             <p className="text-muted small my-3">
                 Filter groups after aggregations have been applied. This corresponds to the <code>HAVING</code> clause in SQL.
             </p>
             {!hasAggregations ? (
@@ -187,25 +212,21 @@ const GroupingTab: React.FC<GroupingTabProps> = ({ setActiveTab }) => {
                     </div>
                 </Alert>
             ) : (
-                <Card>
-                    <Card.Body>
-                        <Stack gap={3}>
-                            {currentStep.having.map(h => (
-                                <HavingItem key={h.id} filter={h} />
-                            ))}
-                            {currentStep.having.length === 0 && (
-                                <div className="p-4 bg-body-tertiary rounded text-center text-muted">
-                                    No "Having" conditions defined.
-                                </div>
-                            )}
-                            <div className="mt-1">
-                                <Button variant="outline-primary" size="sm" onClick={handleAddHaving}>
-                                    <BsPlus /> Add Having Condition
-                                </Button>
-                            </div>
-                        </Stack>
-                    </Card.Body>
-                </Card>
+                <Stack gap={3}>
+                    {currentStep.having.map(h => (
+                        <HavingItem key={h.id} filter={h} />
+                    ))}
+                    {currentStep.having.length === 0 && (
+                        <div className="p-4 bg-body-tertiary rounded text-center text-muted">
+                            No "Having" conditions defined.
+                        </div>
+                    )}
+                    <div className="mt-1">
+                        <Button variant="outline-primary" size="sm" onClick={handleAddHaving}>
+                            <BsPlus /> Add Having Condition
+                        </Button>
+                    </div>
+                </Stack>
             )}
         </div>
     );

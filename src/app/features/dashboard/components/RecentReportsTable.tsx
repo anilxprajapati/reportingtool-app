@@ -27,7 +27,7 @@ const RecentReportsTable: React.FC<RecentReportsTableProps> = ({ reports, theme 
           cellRendererParams: {
             reportBuilderDispatch,
             deleteReport,
-            navigate,
+            navigate: navigate,
           },
           filter: false,
           sortable: false,

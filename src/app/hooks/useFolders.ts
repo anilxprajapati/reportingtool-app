@@ -97,7 +97,7 @@ export const useFolders = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const addFolder = useCallback(async (folderData: { name: string; isPrivate: boolean; parentId: string | null }) => {
+  const addFolder = useCallback(async (folderData: { name: string; isPrivate: boolean; parentId: string | null }): Promise<Folder> => {
     /*
     // --- To use a real API ---
     try {
@@ -107,7 +107,11 @@ export const useFolders = () => {
         } else {
              setFolders(prev => [newFolder, ...prev]);
         }
-    } catch (error) { console.error("Failed to save folder:", error); }
+        return newFolder;
+    } catch (error) { 
+        console.error("Failed to save folder:", error);
+        throw error; // Re-throw to be handled by the caller
+    }
     */
     
     // --- Mock implementation ---
@@ -119,6 +123,7 @@ export const useFolders = () => {
     } else {
       setFolders(prev => [newFolder, ...prev]);
     }
+    return newFolder;
   }, []);
 
   return { folders, loading, addFolder };

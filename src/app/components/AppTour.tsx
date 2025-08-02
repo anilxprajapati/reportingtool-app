@@ -93,12 +93,12 @@ export const reportBuilderTourSteps: Step[] = [
   },
   {
     target: '#query-steps-panel',
-    content: 'For advanced reports, you can add multiple query steps that build on each other.',
+    content: 'You can create multiple query steps within a single report. Each step acts as a separate query configuration, allowing you to create different views of your data. You can add, delete, and rename steps as needed.',
     placement: 'bottom',
   },
   {
     target: '#query-builder-tabs',
-    content: 'These tabs are the core of the builder. Configure fields, create joins, add filters, perform aggregations, and more.',
+    content: 'These tabs are the core of the builder. Configure fields, create joins, add filters, perform aggregations, and more for the currently selected step.',
     placement: 'top',
   },
   {
@@ -108,7 +108,7 @@ export const reportBuilderTourSteps: Step[] = [
   },
   {
     target: '#tour-step-run-report',
-    content: "When you're done configuring, click 'Save & Run Report' to generate the output.",
+    content: "When you're done configuring, click 'Save & Run Report' to generate the output. You'll be able to view the results for each step on the next page.",
     placement: 'left',
   },
 ];
@@ -120,6 +120,11 @@ export const reportOutputTourSteps: Step[] = [
     content: "This is the report output page. Your data is displayed in the grid below, reflecting the configurations you set in the builder.",
     placement: 'bottom',
     disableBeacon: true,
+  },
+  {
+    target: '#report-output-steps',
+    content: 'If your report has multiple steps, you can switch between their results using these buttons.',
+    placement: 'bottom',
   },
   {
     target: '#report-output-grid',

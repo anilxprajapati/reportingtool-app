@@ -31,7 +31,7 @@ const ActionCellRenderer: React.FC<ActionCellRendererProps> = (props) => {
     }
     console.log('Running report:', report);
     localStorage.setItem('nexusReportConfig', JSON.stringify(report.config));
-    window.open('/report-output', '_blank');
+    window.open('#/report-output', '_blank');
   };
 
   const handleDelete = () => {

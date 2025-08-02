@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Button, Stack, Card, Row, Col, Form, InputGroup } from 'react-bootstrap';
-import { BsPlus, BsTrash } from 'react-icons/bs';
+import { BsPlus, BsTrash, BsArrowCounterclockwise } from 'react-icons/bs';
 import { useReportBuilder } from '../../context/ReportBuilderContext';
 import type { Aggregation, AggregationFunction } from '../../../../types';
 import StyledSelect from '../../../../components/StyledSelect';
@@ -101,10 +101,23 @@ const AggregationsTab: React.FC = () => {
     const handleAdd = () => {
         dispatch({ type: 'ADD_AGGREGATION' });
     };
+    
+    const handleReset = () => {
+        if (window.confirm('Are you sure you want to remove all aggregations?')) {
+            dispatch({ type: 'RESET_AGGREGATIONS' });
+        }
+    };
 
     return (
         <div>
-            <p className="text-muted small mb-3">Define aggregations to summarize your data. If aggregations are used, only aggregated and grouped columns can be selected in the Fields tab.</p>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                 <p className="text-muted small mb-0">Define aggregations to summarize your data. If aggregations are used, only aggregated and grouped columns can be selected in the Fields tab.</p>
+                 {currentStep.aggregations.length > 0 && (
+                    <Button variant="outline-danger" size="sm" onClick={handleReset} title="Remove all aggregations">
+                        <BsArrowCounterclockwise className="me-1"/> Reset Aggregations
+                    </Button>
+                )}
+            </div>
             
             <Stack gap={3}>
                 {currentStep.aggregations.map(agg => (

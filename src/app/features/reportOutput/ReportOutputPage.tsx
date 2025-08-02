@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Container, Card, Spinner, Alert, Button, Toast, ToastContainer } from 'react-bootstrap';
+import { Container, Card, Spinner, Alert, Button, Toast, ToastContainer, ButtonGroup } from 'react-bootstrap';
 import { AgGridReact } from 'ag-grid-react';
 import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
 import { BsFileEarmarkExcel, BsSave, BsQuestionCircle } from 'react-icons/bs';
@@ -42,10 +42,11 @@ const ReportOutputPage: React.FC<ReportOutputPageProps> = ({ theme, startTour })
   const [error, setError] = useState<string | null>(null);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showSaveToast, setShowSaveToast] = useState(false);
+  const [selectedStepIndex, setSelectedStepIndex] = useState(0);
   const gridApiRef = useRef<GridApi | null>(null);
   
   const { getReportById, addReport, updateReport } = useReportContext();
-  const { folders } = useFolders();
+  const { folders, addFolder } = useFolders();
 
   useEffect(() => {
     try {
@@ -53,6 +54,7 @@ const ReportOutputPage: React.FC<ReportOutputPageProps> = ({ theme, startTour })
       if (configStr) {
         const parsedConfig: ReportBuilderState = JSON.parse(configStr);
         setReportState(parsedConfig);
+        setSelectedStepIndex(parsedConfig.currentStepIndex); // Set initial step
         if (parsedConfig.id) {
           const report = getReportById(parsedConfig.id);
           setCurrentReport(report || null);
@@ -81,7 +83,9 @@ const ReportOutputPage: React.FC<ReportOutputPageProps> = ({ theme, startTour })
   const { columnDefs, rowData } = useMemo(() => {
     if (!reportState) return { columnDefs: [], rowData: [] };
     
-    const currentStep = reportState.steps[reportState.currentStepIndex];
+    const currentStep = reportState.steps[selectedStepIndex];
+    if (!currentStep) return { columnDefs: [], rowData: [] }; // Handle step deletion case
+    
     const primaryTable = reportState.selectedTables[0];
     let data = primaryTable?.sampleData || [];
     let colDefs: ColDef[];
@@ -168,7 +172,7 @@ const ReportOutputPage: React.FC<ReportOutputPageProps> = ({ theme, startTour })
     }
 
     return { columnDefs: colDefs, rowData: data };
-  }, [reportState]);
+  }, [reportState, selectedStepIndex]);
 
   const onGridReady = (params: GridReadyEvent) => {
     gridApiRef.current = params.api;
@@ -271,11 +275,25 @@ const ReportOutputPage: React.FC<ReportOutputPageProps> = ({ theme, startTour })
             <Card.Header>
                 <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <h4 id="tour-step-output-header" className="mb-0 text-truncate">{currentReport.reportName}</h4>
-                    <div>
-                        <Button variant="outline-info" size="sm" onClick={() => startTour(reportOutputTourSteps)} className="me-2" title="Take a tour of this page">
+                    
+                    <div className="d-flex align-items-center gap-2">
+                        {reportState.steps.length > 1 && (
+                            <ButtonGroup size="sm" id="report-output-steps">
+                                {reportState.steps.map((step, index) => (
+                                    <Button
+                                        key={step.id}
+                                        variant={selectedStepIndex === index ? 'info' : 'outline-info'}
+                                        onClick={() => setSelectedStepIndex(index)}
+                                    >
+                                        {step.name}
+                                    </Button>
+                                ))}
+                            </ButtonGroup>
+                        )}
+                        <Button variant="outline-info" size="sm" onClick={() => startTour(reportOutputTourSteps)} title="Take a tour of this page">
                             <BsQuestionCircle className="me-1" /> Page Tour
                         </Button>
-                        <Button id="tour-step-output-save" variant="outline-primary" size="sm" onClick={() => setShowSaveModal(true)} className="me-2">
+                        <Button id="tour-step-output-save" variant="outline-primary" size="sm" onClick={() => setShowSaveModal(true)}>
                             <BsSave className="me-2"/>
                             Save Report
                         </Button>
@@ -306,14 +324,15 @@ const ReportOutputPage: React.FC<ReportOutputPageProps> = ({ theme, startTour })
           onSave={handleSave}
           report={currentReport}
           folders={folders}
+          addFolder={addFolder}
         />
     )}
     <ToastContainer position="bottom-end" className="p-3" style={{ zIndex: 1056 }}>
-        <Toast onClose={() => setShowSaveToast(false)} show={showSaveToast} delay={3000} autohide>
-          <Toast.Header>
-            <strong className="me-auto">Success</strong>
+        <Toast onClose={() => setShowSaveToast(false)} show={showSaveToast} delay={3000} autohide bg="success">
+          <Toast.Header closeButton={false}>
+            <strong className="me-auto text-white">Success</strong>
           </Toast.Header>
-          <Toast.Body>Report saved successfully!</Toast.Body>
+          <Toast.Body className="text-white">Report saved successfully!</Toast.Body>
         </Toast>
       </ToastContainer>
     </>

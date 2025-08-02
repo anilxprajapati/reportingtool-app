@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { Button, Row, Col, Form } from 'react-bootstrap';
-import { BsPlus, BsTrash, BsArrowDown, BsArrowUp, BsGripVertical } from 'react-icons/bs';
+import { BsPlus, BsTrash, BsArrowDown, BsArrowUp, BsGripVertical, BsArrowCounterclockwise } from 'react-icons/bs';
 import { useReportBuilder } from '../../context/ReportBuilderContext';
 import type { Sort } from '../../../../types';
 import StyledSelect from '../../../../components/StyledSelect';
@@ -107,10 +107,23 @@ const SortTab: React.FC = () => {
     const handleAdd = () => {
         dispatch({ type: 'ADD_SORT' });
     };
+    
+    const handleReset = () => {
+        if (window.confirm('Are you sure you want to remove all sort conditions?')) {
+            dispatch({ type: 'RESET_SORTS' });
+        }
+    };
 
     return (
         <div>
-            <p className="text-muted small mb-3">Define the final sort order for the report output. Drag and drop to change priority.</p>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <p className="text-muted small mb-0">Define the final sort order for the report output. Drag and drop to change priority.</p>
+                {currentStep.sorts.length > 0 && (
+                    <Button variant="outline-danger" size="sm" onClick={handleReset} title="Remove all sort conditions">
+                        <BsArrowCounterclockwise className="me-1"/> Reset Sort
+                    </Button>
+                )}
+            </div>
             
             <div className="d-grid gap-2">
                 {currentStep.sorts.map(sort => (

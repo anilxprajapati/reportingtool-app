@@ -63,25 +63,33 @@ type Action =
   | { type: 'RESET_REPORT' }
   | { type: 'ADD_STEP' }
   | { type: 'SWITCH_STEP'; payload: number }
+  | { type: 'DELETE_STEP'; payload: number }
+  | { type: 'UPDATE_STEP_NAME'; payload: string }
   | { type: 'REORDER_COLUMNS'; payload: SelectedColumn[] }
   | { type: 'UPDATE_COLUMN_ALIAS'; payload: { columnId: string; alias: string } }
   | { type: 'ADD_JOIN' }
   | { type: 'UPDATE_JOIN'; payload: { joinId: string; joinData: Partial<Join> } }
   | { type: 'REMOVE_JOIN'; payload: string }
+  | { type: 'RESET_JOINS' }
   | { type: 'ADD_AGGREGATION' }
   | { type: 'UPDATE_AGGREGATION'; payload: { aggId: string, data: Partial<Aggregation> } }
   | { type: 'REMOVE_AGGREGATION'; payload: string }
+  | { type: 'RESET_AGGREGATIONS' }
   | { type: 'UPDATE_FILTERS_QUERY'; payload: RuleGroupType }
+  | { type: 'RESET_FILTERS' }
   | { type: 'ADD_HAVING' }
   | { type: 'UPDATE_HAVING'; payload: { filterId: string, data: Partial<Filter> } }
   | { type: 'REMOVE_HAVING'; payload: string }
+  | { type: 'RESET_HAVING' }
   | { type: 'ADD_GROUPING' }
   | { type: 'REMOVE_GROUPING'; payload: string }
   | { type: 'UPDATE_GROUPING_COLUMN'; payload: { groupId: string, columnId: string } }
+  | { type: 'RESET_GROUPING' }
   | { type: 'ADD_SORT' }
   | { type: 'UPDATE_SORT'; payload: { sortId: string, data: Partial<Sort> } }
   | { type: 'REMOVE_SORT'; payload: string }
   | { type: 'REORDER_SORTS'; payload: Sort[] }
+  | { type: 'RESET_SORTS' }
   | { type: 'UPDATE_OUTPUT'; payload: { limit?: number | null, distinct?: boolean } };
 
 
@@ -239,6 +247,9 @@ const reportBuilderReducer = (state: ReportBuilderState, action: Action): Report
         const filteredJoins = currentStep.joins.filter(j => j.id !== action.payload);
         return updateCurrentStep({ joins: filteredJoins });
     }
+
+    case 'RESET_JOINS':
+        return updateCurrentStep({ joins: [] });
       
     // --- AGGREGATIONS ---
     case 'ADD_AGGREGATION': {
@@ -259,11 +270,15 @@ const reportBuilderReducer = (state: ReportBuilderState, action: Action): Report
         const filteredAggs = currentStep.aggregations.filter(a => a.id !== action.payload);
         return updateCurrentStep({ aggregations: filteredAggs });
     }
+    case 'RESET_AGGREGATIONS':
+        return updateCurrentStep({ aggregations: [] });
       
     // --- FILTERS (WHERE) ---
     case 'UPDATE_FILTERS_QUERY': {
         return updateCurrentStep({ filtersQuery: action.payload });
     }
+    case 'RESET_FILTERS':
+        return updateCurrentStep({ filtersQuery: { combinator: 'and', rules: [] } });
 
     // --- FILTERS (HAVING) ---
     case 'ADD_HAVING': {
@@ -284,6 +299,8 @@ const reportBuilderReducer = (state: ReportBuilderState, action: Action): Report
         const filteredHavings = currentStep.having.filter(f => f.id !== action.payload);
         return updateCurrentStep({ having: filteredHavings });
     }
+    case 'RESET_HAVING':
+        return updateCurrentStep({ having: [] });
       
     // --- GROUPING ---
     case 'ADD_GROUPING': {
@@ -299,6 +316,8 @@ const reportBuilderReducer = (state: ReportBuilderState, action: Action): Report
         const filteredGroupings = currentStep.groupings.filter(g => g.id !== action.payload);
         return updateCurrentStep({ groupings: filteredGroupings });
     }
+    case 'RESET_GROUPING':
+        return updateCurrentStep({ groupings: [] });
 
     // --- SORT ---
     case 'ADD_SORT': {
@@ -316,6 +335,8 @@ const reportBuilderReducer = (state: ReportBuilderState, action: Action): Report
     }
     case 'REORDER_SORTS':
         return updateCurrentStep({ sorts: action.payload });
+    case 'RESET_SORTS':
+        return updateCurrentStep({ sorts: [] });
 
     // --- OUTPUT ---
     case 'UPDATE_OUTPUT': {
@@ -334,6 +355,29 @@ const reportBuilderReducer = (state: ReportBuilderState, action: Action): Report
     
     case 'SWITCH_STEP':
         return { ...state, currentStepIndex: action.payload };
+    
+    case 'DELETE_STEP': {
+      if (state.steps.length <= 1) return state; // Cannot delete the last step
+
+      const indexToRemove = action.payload;
+      const newSteps = state.steps.filter((_, i) => i !== indexToRemove);
+      let newCurrentStepIndex = state.currentStepIndex;
+
+      if (indexToRemove < newCurrentStepIndex) {
+        newCurrentStepIndex--;
+      } else if (indexToRemove === newCurrentStepIndex) {
+        newCurrentStepIndex = Math.max(0, indexToRemove - 1);
+      }
+
+      return {
+        ...state,
+        steps: newSteps,
+        currentStepIndex: newCurrentStepIndex,
+      };
+    }
+
+    case 'UPDATE_STEP_NAME':
+        return updateCurrentStep({ name: action.payload });
 
     case 'RESET_REPORT':
       return initialState;
